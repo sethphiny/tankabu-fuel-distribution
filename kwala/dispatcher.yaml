@@ -1,0 +1,35 @@
+# Kwala Dispatcher Workflow
+# This workflow listens for the ManifestCreated event on the FuelFlow contract
+# and sends a notification to the Driver and Station Manager via Telegram.
+
+Name: FuelFlow_Dispatcher
+ChainID: 84532 # Base Sepolia
+Status: active
+
+Triggers:
+  - Name: Watch_New_Manifests
+    Type: event_listener
+    # Replace with your deployed FuelFlow contract address
+    ContractAddress: "0xYOUR_CONTRACT_ADDRESS_HERE"
+    # Event: ManifestCreated(uint256 indexed id, bytes32 productType, uint256 volume, address indexed distributor, address indexed station, address depot)
+    EventSignature: "ManifestCreated(uint256,bytes32,uint256,address,address,address)"
+
+Actions:
+  - Name: Notify_Telegram
+    Type: post
+    APIEndpoint: "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/sendMessage"
+    APIPayload:
+      chat_id: "<TELEGRAM_CHAT_ID>"
+      parse_mode: "HTML"
+      text: |
+        <b>🚚 New Fuel Manifest Dispatched!</b>
+        
+        <b>Manifest ID:</b> re.event(0)
+        <b>Product Type:</b> re.event(1)
+        <b>Volume:</b> re.event(2) Liters
+        <b>Distributor:</b> re.event(3)
+        <b>Station:</b> re.event(4)
+        <b>Depot:</b> re.event(5)
+        
+        <i>Logistics automated by Kwala Network.</i>
+    RetriesUntilSuccess: 5

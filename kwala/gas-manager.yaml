@@ -1,0 +1,30 @@
+# Kwala Gas Manager Workflow
+# This workflow monitors the native token balance of a driver's wallet.
+# If the balance falls below a threshold, it alerts the depot manager.
+
+Name: FuelFlow_Gas_Manager
+ChainID: 84532 # Base Sepolia
+Status: active
+
+Triggers:
+  - Name: Monitor_Driver_Wallet
+    Type: low_wallet_balance
+    # Replace with the driver's public address
+    WalletAddress: "0xDRIVER_WALLET_ADDRESS_HERE"
+    # Alert when balance is less than 0.01 ETH
+    Threshold: 0.01
+
+Actions:
+  - Name: Alert_Depot_Manager
+    Type: post
+    APIEndpoint: "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/sendMessage"
+    APIPayload:
+      chat_id: "<TELEGRAM_CHAT_ID>"
+      text: |
+        ⚠️ ALERT: Driver wallet balance is LOW!
+        
+        Address: 0xDRIVER_WALLET_ADDRESS_HERE
+        Current Balance: re.balance()
+        
+        Please top up the wallet to ensure delivery confirmations can be signed.
+    RetriesUntilSuccess: 3
