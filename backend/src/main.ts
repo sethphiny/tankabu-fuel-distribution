@@ -24,6 +24,19 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
   await app.listen(port);
   console.log(`🚀 NestJS MVP Backend running on port ${port}`);
+
+  // Self-ping mechanism to keep Render free tier alive
+  const selfUrl = process.env.SELF_URL;
+  if (selfUrl) {
+    console.log(`💓 Heartbeat: ACTIVE (Pinging ${selfUrl}/health every 14 min)`);
+    setInterval(() => {
+      fetch(`${selfUrl}/health`)
+        .then(res => {
+          if (!res.ok) console.error(`[Heartbeat] Failed with status: ${res.status}`);
+        })
+        .catch(err => console.error(`[Heartbeat] Error: ${err.message}`));
+    }, 14 * 60 * 1000); // 14 minutes
+  }
 }
 
 bootstrap().catch(error => {
