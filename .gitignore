@@ -29,3 +29,6 @@
 
 # Snapshot cheatcodes output
 /snapshots
+kwala/*.yaml
+!kwala/*.sample.yaml
+backend/.env

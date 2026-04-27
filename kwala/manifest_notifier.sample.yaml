@@ -24,7 +24,7 @@ Actions:
     Type: post
     APIEndpoint: "https://tankabu-fuel-distribution.onrender.com/api/shipments"
     APIHeaders:
-      x-api-key: "hQ2pFjUZcsF6NFD6brEe65WzoVGZjuKeMlSyvEmcWQQ="
+      x-api-key: "YOUR_BACKEND_API_KEY_HERE"
     APIPayload:
       manifest_id: re.event(0)
       product_type: re.event(1)

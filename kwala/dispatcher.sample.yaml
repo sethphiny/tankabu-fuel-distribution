@@ -24,7 +24,7 @@ Actions:
     Type: post
     APIEndpoint: "https://tankabu-fuel-distribution.onrender.com/api/checkpoints"
     APIHeaders:
-      x-api-key: "hQ2pFjUZcsF6NFD6brEe65WzoVGZjuKeMlSyvEmcWQQ=" # Local endpoint for hybrid MVP
+      x-api-key: "YOUR_BACKEND_API_KEY_HERE" # Local endpoint for hybrid MVP
     APIPayload:
       shipment_id: re.event(0)
       name: re.event(2)
