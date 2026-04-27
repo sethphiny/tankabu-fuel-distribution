@@ -122,9 +122,9 @@ app.listen(port, () => {
         const { data } = await axios.get(`${SELF_URL}/api/shipments`, {
           headers: { 'x-api-key': API_KEY || '' }
         });
-        console.log('💓 Heartbeat: Stayin'\'' alive...');
+        console.log("💓 Heartbeat: Stayin' alive...");
       } catch (e) {
-        console.warn('💔 Heartbeat: Ping failed, but I'\''m still tryin'\''...');
+        console.warn("💔 Heartbeat: Ping failed, but I'm still tryin'...");
       }
     }, 14 * 60 * 1000); // 14 minutes
   } else {
