@@ -11,9 +11,7 @@ import { ConfigService } from '@nestjs/config';
           url: configService.get<string>('database.url'),
           entities: [__dirname + '/../**/*.schema{.ts,.js}'],
           synchronize: true,
-          ssl: process.env.NODE_ENV === 'production' 
-            ? { rejectUnauthorized: false } 
-            : false,
+          ssl: { rejectUnauthorized: false },
           logging: false,
         };
       },
@@ -22,6 +20,6 @@ import { ConfigService } from '@nestjs/config';
   ],
   exports: [TypeOrmModule],
 })
-export class DatabaseModule {}
+export class DatabaseModule { }
 
 

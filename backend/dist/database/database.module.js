@@ -21,11 +21,9 @@ exports.DatabaseModule = DatabaseModule = __decorate([
                     return {
                         type: 'postgres',
                         url: configService.get('database.url'),
-                        entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+                        entities: [__dirname + '/../**/*.schema{.ts,.js}'],
                         synchronize: true,
-                        ssl: process.env.NODE_ENV === 'production'
-                            ? { rejectUnauthorized: false }
-                            : false,
+                        ssl: { rejectUnauthorized: false },
                         logging: false,
                     };
                 },
