@@ -1,7 +1,7 @@
 # Kwala Dispatcher & DB Sync Workflow V2
 Name: FuelFlow_Hybrid_Sync
 Trigger:
-  TriggerSourceContract: "0xc206827fEe8Af7B90056bdcc93E0c2cCA16095Ae"
+  TriggerSourceContract: "0xBC6724f014831D6909b6cD29aBa47301F48d72CC"
   TriggerChainID: 97
   TriggerEventName: "CheckpointValidated(uint256,uint256,string,uint256,bool)"
   TriggerEventFilter: NA
