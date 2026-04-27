@@ -32,3 +32,4 @@
 kwala/*.yaml
 !kwala/*.sample.yaml
 backend/.env
+backend/*.db
