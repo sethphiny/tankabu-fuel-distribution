@@ -1,15 +1,18 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ShipmentsController } from './shipments/shipments.controller';
-import { ShipmentsService } from './shipments/shipments.service';
+import { envConfig } from './config/env';
+import { DatabaseModule } from './database/database.module';
+import { ShipmentsModule } from './shipments/shipments.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      load: [envConfig],
     }),
-  ],
-  controllers: [ShipmentsController],
-  providers: [ShipmentsService],
+    DatabaseModule,
+    ShipmentsModule,
+  ]
 })
-export class AppModule {}
+export class AppModule { }
+

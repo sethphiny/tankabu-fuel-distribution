@@ -1,44 +1,105 @@
 {
-  "name": "backend",
+  "name": "nestjs-backend-boilerplate",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "A clean, production-ready NestJS backend boilerplate with TypeORM, JWT authentication, RBAC, Swagger documentation, and best practices configured out of the box.",
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/nestjs-backend-boilerplate.git"
+  },
+  "homepage": "https://github.com/yourusername/nestjs-backend-boilerplate#readme",
+  "bugs": {
+    "url": "https://github.com/yourusername/nestjs-backend-boilerplate/issues"
+  },
+  "keywords": [
+    "nestjs",
+    "boilerplate",
+    "backend",
+    "typescript",
+    "typeorm",
+    "jwt",
+    "authentication",
+    "authorization",
+    "rbac",
+    "swagger",
+    "api",
+    "rest",
+    "postgresql",
+    "redis",
+    "express",
+    "nodejs",
+    "backend-template",
+    "starter-template",
+    "production-ready"
+  ],
   "scripts": {
     "build": "nest build",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
-    "dev": "nest start --watch",
+    "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "test-api": "ts-node-dev --transpile-only test_api.ts"
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "migration:generate": "ts-node -r tsconfig-paths/register -e \"import { DatabaseSource } from './src/database/data-source'; DatabaseSource.initialize().then(() => DatabaseSource.runMigrations()).then(() => process.exit(0)).catch(e => { console.error(e); process.exit(1); });\"",
+    "migration:run": "ts-node -r tsconfig-paths/register -e \"import { DatabaseSource } from './src/database/data-source'; DatabaseSource.initialize().then(() => DatabaseSource.runMigrations()).then(() => process.exit(0)).catch(e => { console.error(e); process.exit(1); });\"",
+    "migration:revert": "ts-node -r tsconfig-paths/register -e \"import { DatabaseSource } from './src/database/data-source'; DatabaseSource.initialize().then(() => DatabaseSource.undoLastMigration()).then(() => process.exit(0)).catch(e => { console.error(e); process.exit(1); });\""
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.33.0",
   "dependencies": {
-    "@hono/node-server": "^2.0.0",
-    "@nestjs/common": "^11.1.19",
-    "@nestjs/config": "^4.0.4",
-    "@nestjs/core": "^11.1.19",
-    "@nestjs/platform-express": "^11.1.19",
-    "axios": "^1.15.2",
-    "better-sqlite3": "^12.9.0",
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
+    "@nestjs/common": "^11.1.9",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.1.9",
+    "@nestjs/platform-express": "^11.1.9",
+    "@nestjs/schedule": "^6.1.0",
+    "@nestjs/typeorm": "^11.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.3",
+    "decimal.js": "^10.6.0",
+    "dotenv": "^17.2.3",
     "express": "^5.2.1",
-    "hono": "^4.12.15",
+    "pg": "^8.16.3",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.8.2",
+    "typeorm": "^0.3.28"
   },
   "devDependencies": {
-    "@nestjs/cli": "^11.0.21",
-    "@types/axios": "^0.14.4",
-    "@types/better-sqlite3": "^7.6.13",
-    "@types/cors": "^2.8.19",
+    "@nestjs/cli": "^11.0.14",
+    "@nestjs/schematics": "^11.0.9",
+    "@nestjs/testing": "^11.1.9",
     "@types/express": "^5.0.6",
-    "@types/node": "^25.6.0",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^6.0.3"
+    "@types/node": "^25.0.3",
+    "@typescript-eslint/eslint-plugin": "^8.50.0",
+    "@typescript-eslint/parser": "^8.50.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "prettier": "^3.7.4",
+    "source-map-support": "^0.5.21",
+    "ts-loader": "^9.5.4",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.9.3"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node"
   }
 }

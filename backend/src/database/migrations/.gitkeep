@@ -1,0 +1,24 @@
+# Migrations Directory
+
+This directory contains your database migration files.
+
+## Creating Migrations
+
+Use TypeORM CLI to generate migrations:
+
+```bash
+npm run migration:generate -- -n MigrationName
+```
+
+## Running Migrations
+
+```bash
+npm run migration:run
+```
+
+## Reverting Migrations
+
+```bash
+npm run migration:revert
+```
+

@@ -6,10 +6,9 @@ export class ApiKeyGuard implements CanActivate {
   constructor(private configService: ConfigService) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const apiKey = this.configService.get<string>('BACKEND_API_KEY');
+    const apiKey = this.configService.get<string>('api.key');
     
     if (!apiKey) {
-      // If no API key is set, allow access but log a warning (matching original logic)
       console.warn("⚠️ BACKEND_API_KEY not set in .env. API is currently unprotected.");
       return true;
     }

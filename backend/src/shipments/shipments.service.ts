@@ -1,107 +1,98 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import Database from 'better-sqlite3';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, DataSource } from 'typeorm';
+import { Shipment } from './entities/shipment.entity';
+import { Checkpoint } from './entities/checkpoint.entity';
 
 @Injectable()
-export class ShipmentsService implements OnModuleInit {
-  private db: Database.Database;
+export class ShipmentsService {
+  constructor(
+    @InjectRepository(Shipment)
+    private shipmentsRepository: Repository<Shipment>,
+    @InjectRepository(Checkpoint)
+    private checkpointsRepository: Repository<Checkpoint>,
+    private dataSource: DataSource,
+  ) {}
 
-  constructor(private configService: ConfigService) {}
-
-  onModuleInit() {
-    const dbPath = this.configService.get<string>('DATABASE_URL') || 'fuel_tracker.db';
-    this.db = new Database(dbPath);
-    this.initDb();
+  async findAllShipments() {
+    return this.shipmentsRepository.find({
+      order: { created_at: 'DESC' },
+    });
   }
 
-  private initDb() {
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS shipments (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        manifest_id TEXT UNIQUE,
-        product_type TEXT,
-        volume REAL,
-        price REAL,
-        station_address TEXT,
-        driver_address TEXT,
-        status TEXT DEFAULT 'DISPATCHED',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      );
-
-      CREATE TABLE IF NOT EXISTS checkpoints (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        shipment_id TEXT,
-        name TEXT,
-        location TEXT,
-        status TEXT,
-        volume_recorded REAL,
-        variance REAL,
-        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY(shipment_id) REFERENCES shipments(manifest_id)
-      );
-    `);
-  }
-
-  findAllShipments() {
-    return this.db.prepare('SELECT * FROM shipments ORDER BY created_at DESC').all();
-  }
-
-  createShipment(data: any) {
+  async createShipment(data: any) {
     const { manifest_id, product_type, volume, price, station_address, driver_address, planned_route } = data;
     
-    const insertShipment = this.db.prepare(`
-      INSERT INTO shipments (manifest_id, product_type, volume, price, station_address, driver_address)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `);
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    const insertCheckpoint = this.db.prepare(`
-      INSERT INTO checkpoints (shipment_id, name, location, status, volume_recorded, variance)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `);
+    try {
+      const shipment = this.shipmentsRepository.create({
+        manifest_id, product_type, volume, price, station_address, driver_address
+      });
+      const savedShipment = await queryRunner.manager.save(shipment);
 
-    const transaction = this.db.transaction(() => {
-      const info = insertShipment.run(manifest_id, product_type, volume, price, station_address, driver_address);
-      
       if (planned_route && Array.isArray(planned_route)) {
-        planned_route.forEach((stopName: string) => {
-          insertCheckpoint.run(manifest_id, stopName, stopName, 'PENDING', 0, 0);
-        });
+        const checkpoints = planned_route.map(stopName => 
+          this.checkpointsRepository.create({
+            shipment_id: manifest_id,
+            name: stopName,
+            location: stopName,
+            status: 'PENDING',
+            volume_recorded: 0,
+            variance: 0
+          })
+        );
+        await queryRunner.manager.save(checkpoints);
       }
-      return info;
+
+      await queryRunner.commitTransaction();
+      return { id: savedShipment.id, ...data };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException(err.message);
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async updateShipmentStatus(manifestId: string, status: string) {
+    const result = await this.shipmentsRepository.update(
+      { manifest_id: manifestId },
+      { status }
+    );
+    return { success: true, updated: result.affected };
+  }
+
+  async findCheckpoints(shipmentId: string) {
+    return this.checkpointsRepository.find({
+      where: { shipment_id: shipmentId },
+      order: { timestamp: 'ASC' },
+    });
+  }
+
+  async upsertCheckpoint(data: any) {
+    const { shipment_id, name, location, status, volume_recorded, variance } = data;
+    
+    const existing = await this.checkpointsRepository.findOne({
+      where: { shipment_id, name, status: 'PENDING' }
     });
 
-    const info = transaction();
-    return { id: info.lastInsertRowid, ...data };
-  }
-
-  updateShipmentStatus(manifestId: string, status: string) {
-    const info = this.db.prepare(`
-      UPDATE shipments SET status = ? WHERE manifest_id = ?
-    `).run(status, manifestId);
-    return { success: true, updated: info.changes };
-  }
-
-  findCheckpoints(shipmentId: string) {
-    return this.db.prepare('SELECT * FROM checkpoints WHERE shipment_id = ? ORDER BY timestamp ASC').all(shipmentId);
-  }
-
-  upsertCheckpoint(data: any) {
-    const { shipment_id, name, location, status, volume_recorded, variance } = data;
-    const existing = this.db.prepare("SELECT id FROM checkpoints WHERE shipment_id = ? AND name = ? AND status = 'PENDING'").get(shipment_id, name) as { id: number } | undefined;
-
     if (existing) {
-      this.db.prepare(`
-        UPDATE checkpoints 
-        SET location = ?, status = ?, volume_recorded = ?, variance = ?, timestamp = CURRENT_TIMESTAMP
-        WHERE id = ?
-      `).run(location, status, volume_recorded, variance, existing.id);
-      return { id: existing.id, ...data, updated: true };
+      existing.location = location;
+      existing.status = status;
+      existing.volume_recorded = volume_recorded;
+      existing.variance = variance;
+      existing.timestamp = new Date();
+      const saved = await this.checkpointsRepository.save(existing);
+      return { id: saved.id, ...data, updated: true };
     } else {
-      const info = this.db.prepare(`
-        INSERT INTO checkpoints (shipment_id, name, location, status, volume_recorded, variance)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `).run(shipment_id, name, location, status, volume_recorded, variance);
-      return { id: info.lastInsertRowid, ...data, updated: false };
+      const checkpoint = this.checkpointsRepository.create({
+        shipment_id, name, location, status, volume_recorded, variance
+      });
+      const saved = await this.checkpointsRepository.save(checkpoint);
+      return { id: saved.id, ...data, updated: false };
     }
   }
 }
