@@ -67,7 +67,7 @@ app.get('/api/shipments', (c) => {
 app.post('/api/shipments', async (c) => {
   const body = await c.req.json();
   const { manifest_id, product_type, volume, price, station_address, driver_address, planned_route } = body;
-  
+
   try {
     const insertShipment = db.prepare(`
       INSERT INTO shipments (manifest_id, product_type, volume, price, station_address, driver_address)
@@ -81,7 +81,7 @@ app.post('/api/shipments', async (c) => {
 
     const transaction = db.transaction(() => {
       const info = insertShipment.run(manifest_id, product_type, volume, price, station_address, driver_address);
-      
+
       if (planned_route && Array.isArray(planned_route)) {
         planned_route.forEach((stopName: string) => {
           insertCheckpoint.run(manifest_id, stopName, stopName, 'PENDING', 0, 0);
@@ -100,7 +100,7 @@ app.post('/api/shipments', async (c) => {
 app.patch('/api/shipments/:manifestId', async (c) => {
   const manifestId = c.req.param('manifestId');
   const { status } = await c.req.json();
-  
+
   try {
     const info = db.prepare(`
       UPDATE shipments SET status = ? WHERE manifest_id = ?
@@ -114,7 +114,7 @@ app.patch('/api/shipments/:manifestId', async (c) => {
 app.get('/api/checkpoints', (c) => {
   const shipmentId = c.req.query('shipmentId');
   if (!shipmentId) return c.json({ error: 'shipmentId is required' }, 400);
-  
+
   const checkpoints = db.prepare('SELECT * FROM checkpoints WHERE shipment_id = ? ORDER BY timestamp ASC').all(shipmentId);
   return c.json(checkpoints);
 });
@@ -122,7 +122,7 @@ app.get('/api/checkpoints', (c) => {
 app.post('/api/checkpoints', async (c) => {
   const body = await c.req.json();
   const { shipment_id, name, location, status, volume_recorded, variance } = body;
-  
+
   try {
     const existing = db.prepare("SELECT id FROM checkpoints WHERE shipment_id = ? AND name = ? AND status = 'PENDING'").get(shipment_id, name) as { id: number } | undefined;
 
@@ -159,15 +159,15 @@ serve({
 });
 
 // Keep-Alive Heartbeat (Render Free Tier)
-const SELF_URL = process.env.SELF_URL;
-if (SELF_URL) {
-  console.log(`💓 Heartbeat: ACTIVE (Pinging ${SELF_URL}/health every 10 min)`);
-  setInterval(async () => {
-    try {
-      await axios.get(`${SELF_URL}/health`);
-      console.log("💓 Heartbeat: Server kept warm.");
-    } catch (e) {
-      console.warn("💔 Heartbeat: Ping failed.");
-    }
-  }, 10 * 60 * 1000); // 10 minutes (Render timeout is 15min)
-}
+// const SELF_URL = process.env.SELF_URL;
+// if (SELF_URL) {
+//   console.log(`💓 Heartbeat: ACTIVE (Pinging ${SELF_URL}/health every 10 min)`);
+//   setInterval(async () => {
+//     try {
+//       await axios.get(`${SELF_URL}/health`);
+//       console.log("💓 Heartbeat: Server kept warm.");
+//     } catch (e) {
+//       console.warn("💔 Heartbeat: Ping failed.");
+//     }
+//   }, 10 * 60 * 1000); // 10 minutes (Render timeout is 15min)
+// }
