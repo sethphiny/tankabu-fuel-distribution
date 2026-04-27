@@ -9,50 +9,53 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Checkpoint = void 0;
+exports.Shipment = void 0;
 const typeorm_1 = require("typeorm");
-const shipment_entity_1 = require("./shipment.entity");
-let Checkpoint = class Checkpoint {
+const checkpoint_schema_1 = require("./checkpoint.schema");
+let Shipment = class Shipment {
 };
-exports.Checkpoint = Checkpoint;
+exports.Shipment = Shipment;
 __decorate([
     (0, typeorm_1.PrimaryGeneratedColumn)(),
     __metadata("design:type", Number)
-], Checkpoint.prototype, "id", void 0);
+], Shipment.prototype, "id", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ unique: true }),
+    __metadata("design:type", String)
+], Shipment.prototype, "manifest_id", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
-], Checkpoint.prototype, "shipment_id", void 0);
+], Shipment.prototype, "product_type", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
-    __metadata("design:type", String)
-], Checkpoint.prototype, "name", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
-    __metadata("design:type", String)
-], Checkpoint.prototype, "location", void 0);
-__decorate([
-    (0, typeorm_1.Column)(),
-    __metadata("design:type", String)
-], Checkpoint.prototype, "status", void 0);
-__decorate([
-    (0, typeorm_1.Column)('decimal', { default: 0 }),
+    (0, typeorm_1.Column)('decimal'),
     __metadata("design:type", Number)
-], Checkpoint.prototype, "volume_recorded", void 0);
+], Shipment.prototype, "volume", void 0);
 __decorate([
-    (0, typeorm_1.Column)('decimal', { default: 0 }),
+    (0, typeorm_1.Column)('decimal'),
     __metadata("design:type", Number)
-], Checkpoint.prototype, "variance", void 0);
+], Shipment.prototype, "price", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Shipment.prototype, "station_address", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], Shipment.prototype, "driver_address", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: 'DISPATCHED' }),
+    __metadata("design:type", String)
+], Shipment.prototype, "status", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
-], Checkpoint.prototype, "timestamp", void 0);
+], Shipment.prototype, "created_at", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => shipment_entity_1.Shipment, shipment => shipment.checkpoints),
-    (0, typeorm_1.JoinColumn)({ name: 'shipment_id', referencedColumnName: 'manifest_id' }),
-    __metadata("design:type", shipment_entity_1.Shipment)
-], Checkpoint.prototype, "shipment", void 0);
-exports.Checkpoint = Checkpoint = __decorate([
-    (0, typeorm_1.Entity)('checkpoints')
-], Checkpoint);
-//# sourceMappingURL=checkpoint.entity.js.map
+    (0, typeorm_1.OneToMany)(() => checkpoint_schema_1.Checkpoint, checkpoint => checkpoint.shipment),
+    __metadata("design:type", Array)
+], Shipment.prototype, "checkpoints", void 0);
+exports.Shipment = Shipment = __decorate([
+    (0, typeorm_1.Entity)('shipments')
+], Shipment);
+//# sourceMappingURL=shipment.schema.js.map

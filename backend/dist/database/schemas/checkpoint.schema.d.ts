@@ -1,4 +1,4 @@
-import { Shipment } from './shipment.entity';
+import { Shipment } from './shipment.schema';
 export declare class Checkpoint {
     id: number;
     shipment_id: string;

@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToMany } from 'typeorm';
-import { Checkpoint } from './checkpoint.entity';
+import { Checkpoint } from './checkpoint.schema';
 
 @Entity('shipments')
 export class Shipment {

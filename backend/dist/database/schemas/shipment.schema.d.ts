@@ -1,4 +1,4 @@
-import { Checkpoint } from './checkpoint.entity';
+import { Checkpoint } from './checkpoint.schema';
 export declare class Shipment {
     id: number;
     manifest_id: string;

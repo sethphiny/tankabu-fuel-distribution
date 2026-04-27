@@ -11,14 +11,14 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const shipments_controller_1 = require("./shipments.controller");
 const shipments_service_1 = require("./shipments.service");
-const shipment_entity_1 = require("./entities/shipment.entity");
-const checkpoint_entity_1 = require("./entities/checkpoint.entity");
+const shipment_schema_1 = require("../database/schemas/shipment.schema");
+const checkpoint_schema_1 = require("../database/schemas/checkpoint.schema");
 let ShipmentsModule = class ShipmentsModule {
 };
 exports.ShipmentsModule = ShipmentsModule;
 exports.ShipmentsModule = ShipmentsModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([shipment_entity_1.Shipment, checkpoint_entity_1.Checkpoint])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([shipment_schema_1.Shipment, checkpoint_schema_1.Checkpoint])],
         controllers: [shipments_controller_1.ShipmentsController],
         providers: [shipments_service_1.ShipmentsService],
         exports: [shipments_service_1.ShipmentsService],

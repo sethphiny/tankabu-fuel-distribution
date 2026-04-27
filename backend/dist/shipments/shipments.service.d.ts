@@ -1,6 +1,6 @@
 import { Repository, DataSource } from 'typeorm';
-import { Shipment } from './entities/shipment.entity';
-import { Checkpoint } from './entities/checkpoint.entity';
+import { Shipment } from '../database/schemas/shipment.schema';
+import { Checkpoint } from '../database/schemas/checkpoint.schema';
 export declare class ShipmentsService {
     private shipmentsRepository;
     private checkpointsRepository;

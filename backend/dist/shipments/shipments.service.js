@@ -16,8 +16,8 @@ exports.ShipmentsService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
-const shipment_entity_1 = require("./entities/shipment.entity");
-const checkpoint_entity_1 = require("./entities/checkpoint.entity");
+const shipment_schema_1 = require("../database/schemas/shipment.schema");
+const checkpoint_schema_1 = require("../database/schemas/checkpoint.schema");
 let ShipmentsService = class ShipmentsService {
     constructor(shipmentsRepository, checkpointsRepository, dataSource) {
         this.shipmentsRepository = shipmentsRepository;
@@ -97,8 +97,8 @@ let ShipmentsService = class ShipmentsService {
 exports.ShipmentsService = ShipmentsService;
 exports.ShipmentsService = ShipmentsService = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_1.InjectRepository)(shipment_entity_1.Shipment)),
-    __param(1, (0, typeorm_1.InjectRepository)(checkpoint_entity_1.Checkpoint)),
+    __param(0, (0, typeorm_1.InjectRepository)(shipment_schema_1.Shipment)),
+    __param(1, (0, typeorm_1.InjectRepository)(checkpoint_schema_1.Checkpoint)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository,
         typeorm_2.DataSource])

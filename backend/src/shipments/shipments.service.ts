@@ -1,8 +1,8 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
-import { Shipment } from './entities/shipment.entity';
-import { Checkpoint } from './entities/checkpoint.entity';
+import { Shipment } from '../database/schemas/shipment.schema';
+import { Checkpoint } from '../database/schemas/checkpoint.schema';
 
 @Injectable()
 export class ShipmentsService {
