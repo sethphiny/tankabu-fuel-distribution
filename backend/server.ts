@@ -120,7 +120,7 @@ app.post('/api/checkpoints', validateApiKey, (req, res) => {
   const { shipment_id, name, location, status, volume_recorded, variance } = req.body;
   try {
     // Check if a PENDING checkpoint already exists for this milestone
-    const existing = db.prepare('SELECT id FROM checkpoints WHERE shipment_id = ? AND name = ? AND status = "PENDING"').get(shipment_id, name) as { id: number } | undefined;
+    const existing = db.prepare("SELECT id FROM checkpoints WHERE shipment_id = ? AND name = ? AND status = 'PENDING'").get(shipment_id, name) as { id: number } | undefined;
 
     if (existing) {
       // Update the planned milestone
