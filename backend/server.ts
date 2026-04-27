@@ -148,6 +148,9 @@ app.post('/api/checkpoints', async (c) => {
 // Health check
 app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
+// Root route
+app.get('/', (c) => c.text('Fuel Distribution API v2.4 (Hono) - Status: ONLINE'));
+
 console.log(`🚀 Hono Backend starting on port ${port}`);
 
 serve({
