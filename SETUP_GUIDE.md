@@ -1,101 +1,98 @@
-# 🚀 Full Deployment Guide: From Zero to Automated Logistics
+# 🛠️ Tankabu V2: End-to-End Setup Guide
 
-This guide covers everything you need to get the **FuelFlow** (Fuel Distribution Tracker) system live, from obtaining your first testnet tokens to deploying automated workflows on Kwala.
-
----
-
-## 1. Prerequisites & Wallet Setup
-Before you begin, ensure you have:
-- **Metamask** installed.
-- **Base Sepolia** network added.
-- **Testnet ETH:** Get some from the [Base Sepolia Faucet](https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet).
-- **pnpm** installed globally.
+This guide covers the deployment of the **FuelDistributionV2** ecosystem, including smart contracts, the standalone backend, and Kwala automation.
 
 ---
 
-## 2. Environment Configuration
-Create a `.env` file in the root directory:
-```bash
-PRIVATE_KEY=your_key
-BASE_SEPOLIA_RPC_URL=https://sepolia.base.org
-BASESCAN_API_KEY=your_key
-TELEGRAM_BOT_TOKEN=your_token
-TELEGRAM_CHAT_ID=your_id
+## 1. Prerequisites
+
+- **Node.js v20+** and **pnpm**.
+- **MetaMask** with BSC Testnet funds.
+- **Kwala Account** for workflow activation.
+- **Render Account** (for backend deployment).
+
+---
+
+## 2. Smart Contract Deployment
+
+### Step 1: Configuration
+Create a `.env` in the root:
+```text
+PRIVATE_KEY=your_wallet_private_key
 ```
 
-| Variable | Description | Where to get it |
-| :--- | :--- | :--- |
-| `PRIVATE_KEY` | Your wallet's private key | Wallet -> Account Details -> Export |
-| `BASE_SEPOLIA_RPC_URL` | Base Sepolia RPC URL | [Base Docs](https://docs.base.org/network-information) or Infura/Alchemy |
-| `BASESCAN_API_KEY` | For contract verification | [Basescan.org](https://basescan.org/) Dashboard |
-| `TELEGRAM_BOT_TOKEN` | Your Bot's API token | [@BotFather](https://t.me/botfather) on Telegram |
-| `TELEGRAM_CHAT_ID` | Your unique Chat ID | [@userinfobot](https://t.me/userinfobot) on Telegram |
+### Step 2: Deploy to BSC Testnet
+```bash
+pnpm install
+npx hardhat ignition deploy ignition/modules/FuelDistribution.ts --network bscTestnet --strategy basic --reset
+```
+*Note the deployed addresses for FuelDistributionV2 and MockStablecoin.*
 
 ---
 
-## 3. Smart Contract Deployment
+## 3. Standalone Backend Setup
 
-### Step 3.1: Deploy the Contracts
-Run the following command to deploy the `FuelDistribution` contract and the `MockStablecoin` to your preferred network:
-
-**Base Sepolia:**
+### Step 1: Initialize
 ```bash
-pnpm run deploy:base-sepolia
+cd backend
+pnpm install
 ```
 
-**BSC Testnet:**
-```bash
-pnpm run deploy:bsc-testnet
+### Step 2: Environment
+Create `backend/.env`:
+```text
+BACKEND_API_KEY=your_secure_key_here
+PORT=3000
 ```
 
-**Note:** Save the contract addresses returned in the terminal. Ignition will also save them in `ignition/deployments/chain-<chainId>/deployed_addresses.json`.
-
-### Step 3.2: Verify the Contracts (Crucial)
-Verification allows Kwala and other tools to read your contract's ABI automatically.
-
-**Base Sepolia:**
+### Step 3: Run (Development)
 ```bash
-pnpm run verify:base-sepolia <FUEL_DISTRIBUTION_ADDRESS> <STABLECOIN_ADDRESS> <ADMIN_ADDRESS>
+pnpm dev
 ```
 
-**BSC Testnet:**
-```bash
-pnpm run verify:bsc-testnet <FUEL_DISTRIBUTION_ADDRESS> <STABLECOIN_ADDRESS> <ADMIN_ADDRESS>
+### Step 4: Deploy (Production)
+Connect this repo to **Render**. It will automatically detect `render.yaml` and provision a Web Service with a Persistent Disk.
+
+---
+
+## 4. Kwala Workflow Activation
+
+Activate the following YAMLs in the Kwala dashboard:
+
+1. **`kwala/manifest_notifier.yaml`**:
+   - Updates the SQL DB and notifies the driver via Telegram.
+2. **`kwala/dispatcher.yaml`**:
+   - Synchronizes checkpoint validations and alerts on anomalies.
+3. **`kwala/gas-manager.yaml`**:
+   - Monitors operational liquidity for drivers.
+
+*Ensure the `APIHeaders.x-api-key` in the YAMLs matches your `BACKEND_API_KEY`.*
+
+---
+
+## 5. Frontend Integration (Tankabu)
+
+Update `tankabu/src/lib/constants.ts` with your new deployment data:
+
+```typescript
+export const FUEL_DISTRIBUTION_ADDRESS = "0x..."; // Your V2 Address
+export const MOCK_STABLECOIN_ADDRESS = "0x...";     // Your Mock Token Address
+export const BACKEND_API_URL = "https://your-render-app.onrender.com";
+export const BACKEND_API_KEY = "your_secure_key_here";
 ```
 
 ---
 
-## 4. Get Kwala Credits
-Kwala workflows require credits to execute triggers.
-1. Visit [payments.kwala.network](https://payments.kwala.network/).
-2. Connect your wallet (on **BNB Smart Chain**).
-3. Swap a small amount of **USDT** for Kwala Credits.
-4. Your credits will be linked to your wallet address.
+## 🚀 System Verification
+
+1. **Dispatch**: Create a manifest via **Dispatch Central**. Verify it appears in the SQL DB.
+2. **Track**: Initialize the **Driver Terminal** with the Manifest ID.
+3. **Validate**: Submit a checkpoint validation. Check the **Operator Dashboard** for the updated map marker and **Telegram** for the sync alert.
 
 ---
 
-## 5. Deploying Kwala Workflows
-1. Log in to the [Kwala Dashboard](https://kwala.network/dashboard).
-2. Go to **Workflows** -> **+ Create Workflow**.
-3. Select **Import YAML**.
-4. **Dispatcher Workflow:** Paste contents of `kwala/dispatcher.yaml`.
-    - Note: I have already injected your contract addresses and Telegram credentials into the YAML file for you.
-5. **Gas Manager Workflow:** Paste contents of `kwala/gas-manager.yaml`.
-    - Note: Just update the `TriggerWalletAddress` with the Driver's address if needed.
-6. Click **Deploy & Activate**.
+## 🆘 Troubleshooting
 
----
-
-## 6. Testing the Lifecycle
-1. **Mint Tokens:** Use the `MockStablecoin` contract to mint tokens to your "Station" address.
-2. **Setup Roles:** Grant `STATION_ROLE` to your station address via the `FuelDistribution` contract.
-3. **Create Manifest:** Call `createManifest` on the `FuelDistribution` contract via the [Basescan Write Contract](https://sepolia.basescan.org/) tab or your frontend.
-4. **Check Telegram:** Your bot should instantly send a dispatch notification.
-5. **Confirm Delivery:** Call `confirmDelivery` as the Station.
-6. **Verify Payment:** Check the Distributor's wallet for the released stablecoins.
-
----
-
-## 🔍 Monitoring
-- **Transactions:** [Base Sepolia Explorer](https://sepolia.basescan.org/)
-- **Workflows:** [Kwala Explorer](https://explorer.kwala.network/)
+- **Contract Error**: Ensure you have enough BNB for gas and that the `STATION_ROLE` is granted.
+- **Sync Failure**: Verify that your backend URL is public (use Ngrok for local testing) so Kwala can reach the endpoint.
+- **API Unauthorized**: Check that the `x-api-key` header matches exactly across Kwala, Backend, and Frontend.

@@ -1,49 +1,52 @@
-# ⛽ FuelFlow: Autonomous Fuel Distribution Layer
+# ⛽ Tankabu: Autonomous Fuel Distribution Layer (V2)
 
-**FuelFlow** is a decentralized logistics and automation platform designed to streamline fuel distribution. By combining smart contracts with **Kwala's** off-chain automation, FuelFlow ensures real-time visibility and instant settlement for fuel deliveries.
-
----
-
-## 🚀 Key Features
-
-- **On-chain Manifests:** Every delivery is recorded immutably on the blockchain.
-- **Escrowed Payments:** Funds are locked at dispatch and released instantly upon delivery confirmation.
-- **Autonomous Orchestration:** Kwala monitors the blockchain to send Telegram notifications and trigger settlements.
-- **Fleet Monitoring:** Proactive alerts if driver wallets run low on gas fees.
-- **Premium Dashboard:** A high-end Next.js interface for managing the entire logistics lifecycle.
+**Tankabu** is a decentralized logistics and automation platform designed to streamline fuel distribution. By combining **FuelDistributionV2** smart contracts with a **Standalone SQL Hybrid Backend** and **Kwala's** off-chain orchestration, Tankabu ensures real-time visibility, automated rate management, and secure checkpoint validation.
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Architecture: Hybrid High-Integrity Protocol
+
+Tankabu operates on a "Hybrid" model, where the blockchain provides the **Truth** (Rates, Payments, Validations) and the SQL Backend provides the **Speed** (Real-time tracking, Dashboard history).
 
 ```mermaid
-sequenceDiagram
-    participant Depot
-    participant Blockchain
-    participant Kwala
-    participant Driver
-    participant Station
+graph TD
+    subgraph "On-Chain (Truth)"
+        SC[FuelDistributionV2]
+        ERC20[USDC Escrow]
+    end
 
-    Depot->>Blockchain: createManifest(Volume, Payment)
-    Blockchain-->>Kwala: Emit ManifestCreated
-    Kwala->>Driver: Telegram: "New Job Dispatched"
-    Driver->>Station: Delivers Fuel
-    Station->>Blockchain: confirmDelivery(ID)
-    Blockchain-->>Kwala: Emit DeliveryConfirmed
-    Blockchain->>Depot: Release Escrowed Funds
-    Kwala->>Depot: Telegram: "Payment Received"
+    subgraph "Automation (Orchestration)"
+        K[Kwala Network]
+        T[Telegram Notifier]
+    end
+
+    subgraph "Hybrid Backend (Speed)"
+        API[Standalone Express API]
+        DB[(SQLite Persistent DB)]
+    end
+
+    subgraph "Frontend (Operations)"
+        D[Tankabu Dashboard]
+        DT[Driver Terminal]
+    end
+
+    D -- "Create Manifest" --> SC
+    SC -- "Emit Event" --> K
+    K -- "Sync Data" --> API
+    API --> DB
+    K -- "Alert" --> T
+    DT -- "Validate Checkpoint" --> SC
 ```
 
 ---
 
-## 💻 The Dashboard
+## 🚀 Key V2 Features
 
-The **FuelFlow Command Center** is a modern Next.js application designed for ease of use:
-
-- **Depot Panel:** Create manifests, set volumes, and approve stablecoin escrows.
-- **Station Panel:** Real-time monitoring of incoming shipments and one-click delivery confirmation.
-- **Wallet Integration:** Seamlessly connect via MetaMask or Coinbase Wallet.
-- **Glassmorphic UI:** A premium, dark-mode design optimized for operations.
+- **📊 On-Chain Rate Management:** Product rates (PMS, AGO, DPK) are pulled directly from the smart contract. Only admins can update global pricing.
+- **🚛 Checkpoint Validation:** Drivers validate their progress via the **Driver Terminal**. The system uses on-chain anomaly detection to flag volume variance in real-time.
+- **🗄️ Standalone SQL Backend:** A lightweight Express/SQLite service designed for persistent MVP data storage and high-speed dashboard performance.
+- **🔐 Secure API Sync:** All hybrid data operations are protected by `x-api-key` validation, synchronized via Kwala webhooks.
+- **☁️ Cloud-Ready Deployment:** Native support for **Render** via Blueprint (`render.yaml`), including persistent disk configuration.
 
 ---
 
@@ -51,46 +54,40 @@ The **FuelFlow Command Center** is a modern Next.js application designed for eas
 
 ```text
 .
-├── contracts/          # Solidity Smart Contracts (EVM)
-├── frontend/           # Next.js Dashboard (TypeScript + Tailwind)
-├── kwala/              # Kwala Workflow Configurations (YAML)
-├── scripts/            # Deployment & Maintenance Scripts
-├── test/               # TypeScript Unit Tests
-└── SETUP_GUIDE.md      # End-to-end Deployment Manual
+├── backend/            # Standalone Express + SQLite API (Hybrid Sync)
+├── contracts/          # FuelDistributionV2 Solidity Smart Contracts
+├── ignition/           # Hardhat Ignition Deployment Modules (V2)
+├── kwala/              # V2 Workflow Configurations (Anomaly Alerts, DB Sync)
+├── render.yaml         # Render Blueprint for automated backend deployment
+└── tankabu/            # Primary React Frontend (Managed separately)
 ```
 
 ---
 
-## ⚡ Getting Started
+## ⚡ Technical Core
 
-### 1. Installation
-```bash
-pnpm install
-```
+### 1. Smart Contract (V2)
+- **DRIVER_ROLE**: Authorized fleet addresses for checkpoint validation.
+- **validateCheckpoint**: Logic to detect volume loss between milestones.
+- **updateRate**: Global pricing management by authorized administrators.
 
-### 2. Configuration & Deployment
-Refer to the [**Comprehensive Setup Guide**](./SETUP_GUIDE.md) for step-by-step instructions on:
-- Obtaining wallet and API keys.
-- Deploying to **Base Sepolia**.
-- Activating **Kwala** workflows.
+### 2. Standalone Backend
+- **Endpoint**: `http://localhost:3000` (Local)
+- **Security**: Protected by `BACKEND_API_KEY` in `.env`.
+- **Sync**: Automatically updated by Kwala when on-chain events occur.
 
-### 3. Running the Frontend
-```bash
-cd frontend
-pnpm dev
-```
-
-### 4. Running Tests
-```bash
-pnpm test
-```
+### 3. Kwala Workflows
+- **Hybrid Sync**: Captures `CheckpointValidated` and pushes to the SQL DB.
+- **Anomaly Guard**: Fires Telegram alerts if fuel variance exceeds 5.0%.
+- **Gas Guard**: Monitors driver balances to ensure operational liquidity.
 
 ---
 
-## 🤖 Kwala Workflows
+## 💻 Operational Terminals (Tankabu)
 
-1. **Dispatcher:** Notifies drivers via Telegram when a new manifest is created.
-2. **Gas Manager:** Monitors driver wallets and alerts the depot if they run low on gas fees.
+- **Operator Dashboard**: Real-time map with interactive milestone logs.
+- **Dispatch Central**: Manifest authorization using contract-driven rates.
+- **Driver Terminal**: Manifest-locked interface for route validation.
 
 ---
 
