@@ -22,7 +22,7 @@ Trigger:
 Actions:
   - Name: Sync_To_SQL_DB
     Type: post
-    APIEndpoint: "http://localhost:3000/api/checkpoints"
+    APIEndpoint: "https://tankabu-fuel-distribution.onrender.com/api/checkpoints"
     APIHeaders:
       x-api-key: "hQ2pFjUZcsF6NFD6brEe65WzoVGZjuKeMlSyvEmcWQQ=" # Local endpoint for hybrid MVP
     APIPayload:

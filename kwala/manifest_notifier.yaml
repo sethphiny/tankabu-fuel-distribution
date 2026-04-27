@@ -22,7 +22,7 @@ Trigger:
 Actions:
   - Name: Sync_To_SQL_DB
     Type: post
-    APIEndpoint: "http://localhost:3000/api/shipments"
+    APIEndpoint: "https://tankabu-fuel-distribution.onrender.com/api/shipments"
     APIHeaders:
       x-api-key: "hQ2pFjUZcsF6NFD6brEe65WzoVGZjuKeMlSyvEmcWQQ="
     APIPayload:
