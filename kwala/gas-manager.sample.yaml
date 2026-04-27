@@ -15,7 +15,7 @@ Trigger:
   RecurringPrice: NA
   RepeatEvery: event
   ExecuteAfter: event
-  ExpiresIn: 1781796603
+  ExpiresIn: 1782863999
   Meta: NA
   ActionStatusNotificationPOSTURL: NA
   ActionStatusNotificationAPIKey: NA
