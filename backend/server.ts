@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
 import Database from 'better-sqlite3';
 import cors from 'cors';
+import axios from 'axios';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -111,4 +112,22 @@ app.post('/api/checkpoints', validateApiKey, (req, res) => {
 app.listen(port, () => {
   console.log(`🚀 Standalone Fuel Tracker Backend running at http://localhost:${port}`);
   console.log(`🔒 API Protection: ACTIVE (Header: x-api-key)`);
+  
+  // Keep-Alive Heartbeat (Render Free Tier)
+  const SELF_URL = process.env.SELF_URL;
+  if (SELF_URL) {
+    console.log(`💓 Heartbeat: ACTIVE (Pinging ${SELF_URL} every 14m)`);
+    setInterval(async () => {
+      try {
+        const { data } = await axios.get(`${SELF_URL}/api/shipments`, {
+          headers: { 'x-api-key': API_KEY || '' }
+        });
+        console.log('💓 Heartbeat: Stayin'\'' alive...');
+      } catch (e) {
+        console.warn('💔 Heartbeat: Ping failed, but I'\''m still tryin'\''...');
+      }
+    }, 14 * 60 * 1000); // 14 minutes
+  } else {
+    console.warn("💓 Heartbeat: DISABLED (Set SELF_URL in .env to prevent spin-down)");
+  }
 });

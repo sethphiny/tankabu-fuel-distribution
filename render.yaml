@@ -18,3 +18,5 @@ services:
         value: 10000
       - key: DATABASE_URL
         value: /var/data/fuel_tracker.db
+      - key: SELF_URL
+        fromContext: render_external_url
