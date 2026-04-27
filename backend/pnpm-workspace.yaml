@@ -1,0 +1,15 @@
+allowBuilds:
+  ',': true
+  /: true
+  '@': true
+  b: true
+  better-sqlite3: true
+  e: true
+  i: true
+  j: true
+  m: true
+  o: true
+  r: true
+  s: true
+  t: true
+  u: true

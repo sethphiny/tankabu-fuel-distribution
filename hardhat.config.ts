@@ -1,6 +1,7 @@
+import "dotenv/config";
 import hardhatToolboxViemPlugin from "@nomicfoundation/hardhat-toolbox-viem";
 import verify from "@nomicfoundation/hardhat-verify";
-import { configVariable, defineConfig } from "hardhat/config";
+import { defineConfig } from "hardhat/config";
 
 export default defineConfig({
   plugins: [hardhatToolboxViemPlugin, verify],
@@ -23,13 +24,19 @@ export default defineConfig({
   networks: {
     baseSepolia: {
       type: "http",
-      url: configVariable("BASE_SEPOLIA_RPC_URL"),
-      accounts: [configVariable("PRIVATE_KEY")],
+      chainType: "op",
+      url: process.env.BASE_SEPOLIA_RPC_URL!,
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+    },
+    bscTestnet: {
+      type: "http",
+      url: "https://data-seed-prebsc-1-s1.binance.org:8545/",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
     },
   },
   verify: {
     etherscan: {
-      apiKey: configVariable("BASESCAN_API_KEY")
+      apiKey: process.env.BASESCAN_API_KEY!,
     },
   },
 });

@@ -1,35 +1,68 @@
-# Kwala Dispatcher Workflow
-# This workflow listens for the ManifestCreated event on the FuelFlow contract
-# and sends a notification to the Driver and Station Manager via Telegram.
-
-Name: FuelFlow_Dispatcher
-ChainID: 84532 # Base Sepolia
-Status: active
-
-Triggers:
-  - Name: Watch_New_Manifests
-    Type: event_listener
-    # Replace with your deployed FuelFlow contract address
-    ContractAddress: "0xYOUR_CONTRACT_ADDRESS_HERE"
-    # Event: ManifestCreated(uint256 indexed id, bytes32 productType, uint256 volume, address indexed distributor, address indexed station, address depot)
-    EventSignature: "ManifestCreated(uint256,bytes32,uint256,address,address,address)"
-
+# Kwala Dispatcher & DB Sync Workflow V2
+Name: FuelFlow_Hybrid_Sync
+Trigger:
+  TriggerSourceContract: "0xc206827fEe8Af7B90056bdcc93E0c2cCA16095Ae"
+  TriggerChainID: 97
+  TriggerEventName: "CheckpointValidated(uint256,uint256,string,uint256,bool)"
+  TriggerEventFilter: NA
+  TriggerSourceContractABI: W3siYW5vbnltb3VzIjpmYWxzZSwiaW5wdXRzIjpbeyJpbmRleGVkIjp0cnVlLCJuYW1lIjoibWFuaWZlc3RJZCIsInR5cGUiOiJ1aW50MjU2In0seyJpbmRleGVkIjpmYWxzZSwibmFtZSI6ImNoZWNrcG9pbnRJZCIsInR5cGUiOiJ1aW50MjU2In0seyJpbmRleGVkIjpmYWxzZSwibmFtZSI6ImxvY2F0aW9uIiwidHlwZSI6InN0cmluZyJ9LHsiaW5kZXhlZCI6ZmFsc2UsIm5hbWUiOiJ2b2x1bWVSZWNvcmRlZCIsInR5cGUiOiJ1aW50MjU2In0seyJpbmRleGVkIjpmYWxzZSwibmFtZSI6ImlzQW5vbWFseSIsInR5cGUiOiJboolIn1dLCJuYW1lIjoiQ2hlY2twb2ludFZhbGlkYXRlZCIsInR5cGUiOiJldmVudCJ9XQ==
+  TriggerPrice: NA
+  RecurringSourceContract: NA
+  RecurringChainID: 97
+  RecurringEventName: "CheckpointValidated(uint256,uint256,string,uint256,bool)"
+  RecurringEventFilter: NA
+  RecurringSourceContractABI: NA
+  RecurringPrice: NA
+  RepeatEvery: event
+  ExecuteAfter: event
+  ExpiresIn: 1781796603
+  Meta: NA
+  ActionStatusNotificationPOSTURL: NA
+  ActionStatusNotificationAPIKey: NA
 Actions:
-  - Name: Notify_Telegram
+  - Name: Sync_To_SQL_DB
     Type: post
-    APIEndpoint: "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/sendMessage"
+    APIEndpoint: "http://localhost:3000/api/checkpoints"
+    APIHeaders:
+      x-api-key: "hQ2pFjUZcsF6NFD6brEe65WzoVGZjuKeMlSyvEmcWQQ=" # Local endpoint for hybrid MVP
     APIPayload:
-      chat_id: "<TELEGRAM_CHAT_ID>"
+      shipment_id: re.event(0)
+      name: re.event(2)
+      location: re.event(2)
+      status: "VERIFIED"
+      volume_recorded: re.event(3)
+      variance: 0.0
+    TargetContract: NA
+    TargetFunction: NA
+    TargetParams: NA
+    ChainID: NA
+    EncodedABI: NA
+    Bytecode: NA
+    Metadata: NA
+    RetriesUntilSuccess: 5
+
+  - Name: Anomaly_Alert
+    Type: post
+    APIEndpoint: "https://api.telegram.org/bot8694595805:AAG6GnF30GPpLCidQm-2uKjGo2Jqy0SQ7Ys/sendMessage"
+    APIPayload:
+      chat_id: "307092268"
       parse_mode: "HTML"
       text: |
-        <b>🚚 New Fuel Manifest Dispatched!</b>
-        
+        <b>⚠️ FUEL ANOMALY DETECTED!</b>
+
         <b>Manifest ID:</b> re.event(0)
-        <b>Product Type:</b> re.event(1)
-        <b>Volume:</b> re.event(2) Liters
-        <b>Distributor:</b> re.event(3)
-        <b>Station:</b> re.event(4)
-        <b>Depot:</b> re.event(5)
-        
-        <i>Logistics automated by Kwala Network.</i>
+        <b>Checkpoint:</b> re.event(2)
+        <b>Recorded Volume:</b> re.event(3) L
+        <b>Anomaly Flag:</b> re.event(4)
+
+        <i>Immediate operator intervention required. Hybrid DB updated.</i>
+    TargetContract: NA
+    TargetFunction: NA
+    TargetParams: NA
+    ChainID: NA
+    EncodedABI: NA
+    Bytecode: NA
+    Metadata: NA
     RetriesUntilSuccess: 5
+Execution:
+  Mode: sequential

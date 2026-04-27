@@ -4,7 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "hardhat test",
+    "deploy:base-sepolia": "hardhat ignition deploy ignition/modules/FuelDistribution.ts --network baseSepolia",
+    "verify:base-sepolia": "hardhat verify --network baseSepolia",
+    "deploy:bsc-testnet": "hardhat ignition deploy ignition/modules/FuelDistribution.ts --network bscTestnet",
+    "verify:bsc-testnet": "hardhat verify --network bscTestnet"
   },
   "keywords": [],
   "author": "",

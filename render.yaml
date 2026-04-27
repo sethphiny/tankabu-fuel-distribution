@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: fuel-tracker-backend
+    env: node
+    plan: standard # Required for persistent disks
+    buildCommand: cd backend && pnpm install && pnpm build
+    startCommand: cd backend && pnpm start
+    disk:
+      name: fuel-db
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: BACKEND_API_KEY
+        generateValue: true
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        value: /var/data/fuel_tracker.db

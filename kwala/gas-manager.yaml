@@ -1,30 +1,45 @@
-# Kwala Gas Manager Workflow
-# This workflow monitors the native token balance of a driver's wallet.
-# If the balance falls below a threshold, it alerts the depot manager.
-
-Name: FuelFlow_Gas_Manager
-ChainID: 84532 # Base Sepolia
-Status: active
-
-Triggers:
-  - Name: Monitor_Driver_Wallet
-    Type: low_wallet_balance
-    # Replace with the driver's public address
-    WalletAddress: "0xDRIVER_WALLET_ADDRESS_HERE"
-    # Alert when balance is less than 0.01 ETH
-    Threshold: 0.01
-
+# Kwala Gas & Operational Liquidity Manager V2
+Name: FuelFlow_Gas_Guard
+Trigger:
+  TriggerSourceContract: "0xc206827fEe8Af7B90056bdcc93E0c2cCA16095Ae"
+  TriggerChainID: 97
+  TriggerEventName: "CheckpointValidated(uint256,uint256,string,uint256,bool)"
+  TriggerEventFilter: NA
+  TriggerSourceContractABI: W3siYW5vbnltb3VzIjpmYWxzZSwiaW5wdXRzIjpbeyJpbmRleGVkIjp0cnVlLCJuYW1lIjoibWFuaWZlc3RJZCIsInR5cGUiOiJ1aW50MjU2In0seyJpbmRleGVkIjpmYWxzZSwibmFtZSI6ImNoZWNrcG9pbnRJZCIsInR5cGUiOiJ1aW50MjU2In0seyJpbmRleGVkIjpmYWxzZSwibmFtZSI6ImxvY2F0aW9uIiwidHlwZSI6InN0cmluZyJ9LHsiaW5kZXhlZCI6ZmFsc2UsIm5hbWUiOiJ2b2x1bWVSZWNvcmRlZCIsInR5cGUiOiJ1aW50MjU2In0seyJpbmRleGVkIjpmYWxzZSwibmFtZSI6ImlzQW5vbWFseSIsInR5cGUiOiJboolIn1dLCJuYW1lIjoiQ2hlY2twb2ludFZhbGlkYXRlZCIsInR5cGUiOiJldmVudCJ9XQ==
+  TriggerPrice: NA
+  RecurringSourceContract: NA
+  RecurringChainID: 97
+  RecurringEventName: NA
+  RecurringEventFilter: NA
+  RecurringSourceContractABI: NA
+  RecurringPrice: NA
+  RepeatEvery: event
+  ExecuteAfter: event
+  ExpiresIn: 1781796603
+  Meta: NA
+  ActionStatusNotificationPOSTURL: NA
+  ActionStatusNotificationAPIKey: NA
 Actions:
-  - Name: Alert_Depot_Manager
+  - Name: Driver_Gas_Check
     Type: post
-    APIEndpoint: "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/sendMessage"
+    APIEndpoint: "https://api.telegram.org/bot8694595805:AAG6GnF30GPpLCidQm-2uKjGo2Jqy0SQ7Ys/sendMessage"
     APIPayload:
-      chat_id: "<TELEGRAM_CHAT_ID>"
+      chat_id: "307092268"
+      parse_mode: "HTML"
       text: |
-        ⚠️ ALERT: Driver wallet balance is LOW!
-        
-        Address: 0xDRIVER_WALLET_ADDRESS_HERE
-        Current Balance: re.balance()
-        
-        Please top up the wallet to ensure delivery confirmations can be signed.
+        <b>⛽ GAS_GUARD: OPERATIONAL LIQUIDITY UPDATE</b>
+
+        <b>Driver:</b> re.event.signer
+        <b>Current Balance:</b> re.balance(re.event.signer) BNB
+
+        <i>If balance is below 0.01 BNB, please initialize a top-up to avoid dispatch delays.</i>
+    TargetContract: NA
+    TargetFunction: NA
+    TargetParams: NA
+    ChainID: NA
+    EncodedABI: NA
+    Bytecode: NA
+    Metadata: NA
     RetriesUntilSuccess: 3
+Execution:
+  Mode: sequential

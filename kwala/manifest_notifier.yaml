@@ -1,0 +1,69 @@
+# Kwala Manifest Notifier & DB Sync V2
+Name: FuelFlow_Manifest_Notifier_V2
+Trigger:
+  TriggerSourceContract: "0xc206827fEe8Af7B90056bdcc93E0c2cCA16095Ae"
+  TriggerChainID: 97
+  TriggerEventName: "ManifestCreated(uint256,bytes32,uint256,uint256,address,address,address)"
+  TriggerEventFilter: NA
+  TriggerSourceContractABI: W3siYW5vbnltb3VzIjpmYWxzZSwiaW5wdXRzIjpbeyJpbmRleGVkIjp0cnVlLCJuYW1lIjoiaWQiLCJ0eXBlIjoidWludDI1NiJ9LHsiaW5kZXhlZCI6ZmFsc2UsIm5hbWUiOiJwcm9kdWN0VHlwZSIsInR5cGUiOiJieXRlczMyIn0seyJpbmRleGVkIjpmYWxzZSwibmFtZSI6InZvbHVtZSIsInR5cGUiOiJ1aW50MjU2In0seyJpbmRleGVkIjpmYWxzZSwibmFtZSI6InByaWNlUGVyTGl0ZXIiLCJ0eXBlIjoidWludDI1NiJ9LHsiaW5kZXhlZCI6dHJ1ZSwibmFtZSI6ImRpc3RyaWJ1dG9yIiwidHlwZSI6ImFkZHJlc3MifSx7ImluZGV4ZWQiOnRydWUsIm5hbWUiOiJzdGF0aW9uIiwidHlwZSI6ImFkZHJlc3MifSx7ImluZGV4ZWQiOmZhbHNlLCJuYW1lIjoiZGVwb3QiLCJ0eXBlIjoiYWRkcmVzcyJ9XSwibmFtZSI6Ik1hbmlmZXN0Q3JlYXRlZCIsInR5cGUiOiJldmVudCJ9XQ==
+  TriggerPrice: NA
+  RecurringSourceContract: NA
+  RecurringChainID: 97
+  RecurringEventName: "ManifestCreated(uint256,bytes32,uint256,uint256,address,address,address)"
+  RecurringEventFilter: NA
+  RecurringSourceContractABI: NA
+  RecurringPrice: NA
+  RepeatEvery: event
+  ExecuteAfter: event
+  ExpiresIn: 1781796603
+  Meta: NA
+  ActionStatusNotificationPOSTURL: NA
+  ActionStatusNotificationAPIKey: NA
+Actions:
+  - Name: Sync_To_SQL_DB
+    Type: post
+    APIEndpoint: "http://localhost:3000/api/shipments"
+    APIHeaders:
+      x-api-key: "hQ2pFjUZcsF6NFD6brEe65WzoVGZjuKeMlSyvEmcWQQ="
+    APIPayload:
+      manifest_id: re.event(0)
+      product_type: re.event(1)
+      volume: re.event(2)
+      price: re.event(3)
+      station_address: re.event(5)
+      driver_address: re.event(4)
+    TargetContract: NA
+    TargetFunction: NA
+    TargetParams: NA
+    ChainID: NA
+    EncodedABI: NA
+    Bytecode: NA
+    Metadata: NA
+    RetriesUntilSuccess: 5
+
+  - Name: Notify_Driver
+    Type: post
+    APIEndpoint: "https://api.telegram.org/bot8694595805:AAG6GnF30GPpLCidQm-2uKjGo2Jqy0SQ7Ys/sendMessage"
+    APIPayload:
+      chat_id: "307092268"
+      parse_mode: "HTML"
+      text: |
+        <b>🚛 New Dispatch Assignment!</b>
+
+        <b>Manifest ID:</b> re.event(0)
+        <b>Volume:</b> re.event(2) Liters
+        <b>Unit Rate:</b> re.event(3) USDC
+        <b>Driver:</b> re.event(4)
+        <b>Target Station:</b> re.event(5)
+
+        <i>Report to Depot immediately. Manifest authorized and synced to Hybrid DB.</i>
+    TargetContract: NA
+    TargetFunction: NA
+    TargetParams: NA
+    ChainID: NA
+    EncodedABI: NA
+    Bytecode: NA
+    Metadata: NA
+    RetriesUntilSuccess: 5
+Execution:
+  Mode: sequential
