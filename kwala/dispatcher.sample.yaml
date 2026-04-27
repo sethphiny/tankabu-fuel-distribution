@@ -43,9 +43,9 @@ Actions:
 
   - Name: Anomaly_Alert
     Type: post
-    APIEndpoint: "https://api.telegram.org/bot8694595805:AAG6GnF30GPpLCidQm-2uKjGo2Jqy0SQ7Ys/sendMessage"
+    APIEndpoint: "https://api.telegram.org/botYOUR_TELEGRAM_BOT_TOKEN_HERE/sendMessage"
     APIPayload:
-      chat_id: "307092268"
+      chat_id: "YOUR_TELEGRAM_CHAT_ID_HERE"
       parse_mode: "HTML"
       text: |
         <b>⚠️ FUEL ANOMALY DETECTED!</b>
