@@ -116,7 +116,7 @@ app.listen(port, () => {
   // Keep-Alive Heartbeat (Render Free Tier)
   const SELF_URL = process.env.SELF_URL;
   if (SELF_URL) {
-    console.log(`💓 Heartbeat: ACTIVE (Pinging ${SELF_URL} every 14m)`);
+    console.log(`💓 Heartbeat: ACTIVE (Pinging ${SELF_URL} every 40s)`);
     setInterval(async () => {
       try {
         const { data } = await axios.get(`${SELF_URL}/api/shipments`, {
@@ -126,7 +126,7 @@ app.listen(port, () => {
       } catch (e) {
         console.warn("💔 Heartbeat: Ping failed, but I'm still tryin'...");
       }
-    }, 14 * 60 * 1000); // 14 minutes
+    }, 40 * 1000); // 40 seconds
   } else {
     console.warn("💓 Heartbeat: DISABLED (Set SELF_URL in .env to prevent spin-down)");
   }
