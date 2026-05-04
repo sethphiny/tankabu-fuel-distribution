@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Shipment } from '../database/schemas/shipment.schema';
@@ -75,24 +75,32 @@ export class ShipmentsService {
   async upsertCheckpoint(data: any) {
     const { shipment_id, name, location, status, volume_recorded, variance } = data;
     
+    // 1. Check if shipment exists
+    const shipment = await this.shipmentsRepository.findOne({
+      where: { manifest_id: shipment_id }
+    });
+
+    if (!shipment) {
+      throw new NotFoundException(`Shipment with manifest ID ${shipment_id} does not exist.`);
+    }
+
+    // 2. Find existing checkpoint
     const existing = await this.checkpointsRepository.findOne({
       where: { shipment_id, name, status: 'PENDING' }
     });
 
-    if (existing) {
-      existing.location = location;
-      existing.status = status;
-      existing.volume_recorded = volume_recorded;
-      existing.variance = variance;
-      existing.timestamp = new Date();
-      const saved = await this.checkpointsRepository.save(existing);
-      return { id: saved.id, ...data, updated: true };
-    } else {
-      const checkpoint = this.checkpointsRepository.create({
-        shipment_id, name, location, status, volume_recorded, variance
-      });
-      const saved = await this.checkpointsRepository.save(checkpoint);
-      return { id: saved.id, ...data, updated: false };
+    if (!existing) {
+      throw new NotFoundException(`Pending checkpoint '${name}' for shipment '${shipment_id}' not found.`);
     }
+
+    // 3. Update existing checkpoint
+    existing.location = location;
+    existing.status = status;
+    existing.volume_recorded = volume_recorded;
+    existing.variance = variance;
+    existing.timestamp = new Date();
+    
+    const saved = await this.checkpointsRepository.save(existing);
+    return { id: saved.id, ...data, updated: true };
   }
 }
