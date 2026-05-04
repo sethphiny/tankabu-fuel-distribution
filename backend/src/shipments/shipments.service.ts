@@ -1,8 +1,10 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Shipment } from '../database/schemas/shipment.schema';
 import { Checkpoint } from '../database/schemas/checkpoint.schema';
+import { CreateShipmentDto } from './dto/create-shipment.dto';
+import { UpsertCheckpointDto } from './dto/upsert-checkpoint.dto';
 
 @Injectable()
 export class ShipmentsService {
@@ -20,9 +22,15 @@ export class ShipmentsService {
     });
   }
 
-  async createShipment(data: any) {
+  async createShipment(data: CreateShipmentDto) {
     const { manifest_id, product_type, volume, price, station_address, driver_address, planned_route } = data;
     
+    // Check if manifest_id already exists to prevent generic DB error
+    const existingShipment = await this.shipmentsRepository.findOne({ where: { manifest_id } });
+    if (existingShipment) {
+      throw new ConflictException(`Shipment with manifest ID ${manifest_id} already exists.`);
+    }
+
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -51,7 +59,10 @@ export class ShipmentsService {
       return { id: savedShipment.id, ...data };
     } catch (err) {
       await queryRunner.rollbackTransaction();
-      throw new InternalServerErrorException(err.message);
+      if (err.code === '23505') {
+        throw new ConflictException(`Shipment with manifest ID ${manifest_id} already exists.`);
+      }
+      throw new BadRequestException(err.message || 'Failed to create shipment due to invalid data.');
     } finally {
       await queryRunner.release();
     }
@@ -62,17 +73,31 @@ export class ShipmentsService {
       { manifest_id: manifestId },
       { status }
     );
+
+    if (result.affected === 0) {
+      throw new NotFoundException(`Shipment with manifest ID ${manifestId} not found.`);
+    }
+
     return { success: true, updated: result.affected };
   }
 
   async findCheckpoints(shipmentId: string) {
+    if (!shipmentId) {
+      throw new BadRequestException('shipmentId query parameter is required');
+    }
+    
+    const shipment = await this.shipmentsRepository.findOne({ where: { manifest_id: shipmentId } });
+    if (!shipment) {
+      throw new NotFoundException(`Shipment with ID ${shipmentId} not found.`);
+    }
+
     return this.checkpointsRepository.find({
       where: { shipment_id: shipmentId },
       order: { timestamp: 'ASC' },
     });
   }
 
-  async upsertCheckpoint(data: any) {
+  async upsertCheckpoint(data: UpsertCheckpointDto) {
     const { shipment_id, name, location, status, volume_recorded, variance } = data;
     
     // 1. Check if shipment exists
@@ -90,11 +115,11 @@ export class ShipmentsService {
     });
 
     if (!existing) {
-      throw new NotFoundException(`Pending checkpoint '${name}' for shipment '${shipment_id}' not found.`);
+      throw new NotFoundException(`Pending checkpoint '${name}' for shipment '${shipment_id}' not found or already processed.`);
     }
 
     // 3. Update existing checkpoint
-    existing.location = location;
+    existing.location = location || existing.location;
     existing.status = status;
     existing.volume_recorded = volume_recorded;
     existing.variance = variance;

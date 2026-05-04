@@ -1,6 +1,9 @@
 import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { ShipmentsService } from './shipments.service';
 import { ApiKeyGuard } from '../common/guards/api-key.guard';
+import { CreateShipmentDto } from './dto/create-shipment.dto';
+import { UpsertCheckpointDto } from './dto/upsert-checkpoint.dto';
+import { UpdateShipmentStatusDto } from './dto/update-shipment-status.dto';
 
 @Controller('api')
 @UseGuards(ApiKeyGuard)
@@ -13,13 +16,16 @@ export class ShipmentsController {
   }
 
   @Post('shipments')
-  create(@Body() body: any) {
+  create(@Body() body: CreateShipmentDto) {
     return this.shipmentsService.createShipment(body);
   }
 
   @Patch('shipments/:manifestId')
-  updateStatus(@Param('manifestId') manifestId: string, @Body('status') status: string) {
-    return this.shipmentsService.updateShipmentStatus(manifestId, status);
+  updateStatus(
+    @Param('manifestId') manifestId: string,
+    @Body() body: UpdateShipmentStatusDto,
+  ) {
+    return this.shipmentsService.updateShipmentStatus(manifestId, body.status);
   }
 
   @Get('checkpoints')
@@ -28,7 +34,7 @@ export class ShipmentsController {
   }
 
   @Post('checkpoints')
-  upsertCheckpoint(@Body() body: any) {
+  upsertCheckpoint(@Body() body: UpsertCheckpointDto) {
     return this.shipmentsService.upsertCheckpoint(body);
   }
 }
