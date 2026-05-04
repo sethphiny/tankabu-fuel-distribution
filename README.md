@@ -1,93 +1,112 @@
 # ⛽ Tankabu: Autonomous Fuel Distribution Layer (V2)
 
-**Tankabu** is a decentralized logistics and automation platform designed to streamline fuel distribution. By combining **FuelDistributionV2** smart contracts with a **Standalone SQL Hybrid Backend** and **Kwala's** off-chain orchestration, Tankabu ensures real-time visibility, automated rate management, and secure checkpoint validation.
+![Tankabu Dashboard](docs/assets/dashboard_mockup.png)
+
+**Tankabu** is a next-generation decentralized logistics and automation platform designed to solve the "last mile" transparency problem in fuel distribution. By leveraging a **Hybrid High-Integrity Protocol**, Tankabu combines the immutable truth of the blockchain with the high-speed performance of a standalone SQL backend, orchestrated by **Kwala's** off-chain intelligence.
 
 ---
 
-## 🏗️ Architecture: Hybrid High-Integrity Protocol
+## 🌟 Executive Summary
 
-Tankabu operates on a "Hybrid" model, where the blockchain provides the **Truth** (Rates, Payments, Validations) and the SQL Backend provides the **Speed** (Real-time tracking, Dashboard history).
+Traditional fuel logistics are plagued by opacity, volume theft, and slow financial settlements. Tankabu V2 introduces an autonomous layer that:
+1.  **Secures Payments**: Uses on-chain escrow to ensure distributors are paid instantly upon verified delivery.
+2.  **Eliminates Fraud**: Implements real-time anomaly detection at every checkpoint.
+3.  **Automates Operations**: Utilizes off-chain workflows to sync data, monitor gas, and notify stakeholders.
+
+---
+
+## 🏗️ System Architecture
+
+Tankabu operates on a dual-layer architecture designed for both **Trust** and **Performance**.
+
+### The Hybrid Model
+-   **On-Chain (Truth)**: Smart contracts manage product rates, manifest authorization, and fund escrow.
+-   **Off-Chain (Speed)**: A NestJS/SQLite backend provides sub-second visibility into shipment history and route telemetry.
+-   **Orchestration (Kwala)**: Acts as the "glue," listening for on-chain events and triggering database syncs, Telegram alerts, and gas management tasks.
 
 ```mermaid
 graph TD
-    subgraph "On-Chain (Truth)"
-        SC[FuelDistributionV2]
-        ERC20[USDC Escrow]
+    subgraph "Blockchain Layer (Trust)"
+        SC[FuelDistributionV2 Contract]
+        ERC20[USDC/Mock Escrow]
     end
 
-    subgraph "Automation (Orchestration)"
+    subgraph "Automation Layer (Orchestration)"
         K[Kwala Network]
-        T[Telegram Notifier]
+        T[Telegram Notifications]
     end
 
-    subgraph "Hybrid Backend (Speed)"
-        API[Standalone Express API]
-        DB[(SQLite Persistent DB)]
+    subgraph "Backend Layer (Speed)"
+        API[NestJS Standalone API]
+        DB[(SQLite Persistent Storage)]
     end
 
-    subgraph "Frontend (Operations)"
+    subgraph "Frontend Layer (Execution)"
         D[Tankabu Dashboard]
         DT[Driver Terminal]
+        AC[Admin Control]
     end
 
-    D -- "Create Manifest" --> SC
-    SC -- "Emit Event" --> K
-    K -- "Sync Data" --> API
+    D -- "Initialize Manifest" --> SC
+    SC -- "ManifestCreated" --> K
+    K -- "Sync Manifest" --> API
     API --> DB
-    K -- "Alert" --> T
+    
     DT -- "Validate Checkpoint" --> SC
+    SC -- "CheckpointValidated" --> K
+    K -- "Anomaly Check & DB Sync" --> API
+    K -- "Instant Alert" --> T
 ```
 
 ---
 
 ## 🚀 Key V2 Features
 
-- **📊 On-Chain Rate Management:** Product rates (PMS, AGO, DPK) are pulled directly from the smart contract. Only admins can update global pricing.
-- **🚛 Checkpoint Validation:** Drivers validate their progress via the **Driver Terminal**. The system uses on-chain anomaly detection to flag volume variance in real-time.
-- **🗄️ Standalone SQL Backend:** A lightweight Express/SQLite service designed for persistent MVP data storage and high-speed dashboard performance.
-- **🔐 Secure API Sync:** All hybrid data operations are protected by `x-api-key` validation, synchronized via Kwala webhooks.
-- **☁️ Cloud-Ready Deployment:** Native support for **Render** via Blueprint (`render.yaml`), including persistent disk configuration.
+### 📊 On-Chain Rate Management
+Product rates (PMS, AGO, DPK) are managed directly on the smart contract. This ensures all parties (Depots, Stations, Drivers) operate on a single, immutable price source, preventing "middleman" price manipulation.
+
+### 🚛 Intelligent Checkpoint Validation
+Drivers must validate their progress at predefined milestones. The `FuelDistributionV2` contract includes built-in logic to detect volume variance. If the recorded volume drops below 95% of the dispatched volume, an **Anomaly Flag** is raised instantly.
+
+### 🤖 Kwala-Powered Workflows
+-   **Hybrid Sync**: Every on-chain validation is automatically mirrored to the SQL database for high-speed dashboard rendering.
+-   **Anomaly Guard**: Immediate Telegram alerts are fired to operators when the system detects a potential fuel leak or theft.
+-   **Gas Guard**: Monitors the operational liquidity of driver wallets, ensuring they always have enough gas for the next validation.
 
 ---
 
-## 📂 Project Structure
+## 💻 Operational Terminals
 
-```text
-.
-├── backend/            # Standalone Express + SQLite API (Hybrid Sync)
-├── contracts/          # FuelDistributionV2 Solidity Smart Contracts
-├── ignition/           # Hardhat Ignition Deployment Modules (V2)
-├── kwala/              # V2 Workflow Configurations (Anomaly Alerts, DB Sync)
-├── render.yaml         # Render Blueprint for automated backend deployment
-└── tankabu/            # Primary React Frontend (Managed separately)
-```
+The **Tankabu Frontend** provides tailored experiences for every persona in the ecosystem:
 
----
-
-## ⚡ Technical Core
-
-### 1. Smart Contract (V2)
-- **DRIVER_ROLE**: Authorized fleet addresses for checkpoint validation.
-- **validateCheckpoint**: Logic to detect volume loss between milestones.
-- **updateRate**: Global pricing management by authorized administrators.
-
-### 2. Standalone Backend
-- **Endpoint**: `http://localhost:3000` (Local)
-- **Security**: Protected by `BACKEND_API_KEY` in `.env`.
-- **Sync**: Automatically updated by Kwala when on-chain events occur.
-
-### 3. Kwala Workflows
-- **Hybrid Sync**: Captures `CheckpointValidated` and pushes to the SQL DB.
-- **Anomaly Guard**: Fires Telegram alerts if fuel variance exceeds 5.0%.
-- **Gas Guard**: Monitors driver balances to ensure operational liquidity.
+| Terminal | Purpose | Key Actions |
+| :--- | :--- | :--- |
+| **Admin Control** | System Governance | Update rates, manage roles, view global stats. |
+| **Dispatch Central** | Manifest Initiation | Select products, set volume, authorize drivers. |
+| **Driver Terminal** | Route Execution | Validate checkpoints, view route maps. |
+| **Station Dashboard** | Delivery Confirmation | Confirm receipt, trigger on-chain payment release. |
+| **Operator Dashboard** | Real-time Monitoring | Live map tracking, anomaly investigation. |
 
 ---
 
-## 💻 Operational Terminals (Tankabu)
+## 🛠️ Technical Stack
 
-- **Operator Dashboard**: Real-time map with interactive milestone logs.
-- **Dispatch Central**: Manifest authorization using contract-driven rates.
-- **Driver Terminal**: Manifest-locked interface for route validation.
+-   **Smart Contracts**: Solidity 0.8.28, Hardhat, OpenZeppelin.
+-   **Backend**: NestJS, TypeORM, SQLite.
+-   **Automation**: Kwala Network (Off-chain event listeners & actions).
+-   **Frontend**: React, Vite, Tailwind CSS, Lucide Icons, Ethers.js.
+-   **Infrastructure**: Render (Auto-deployment with Persistent Disks).
+
+---
+
+## 📈 Roadmap & Achievements
+
+-   [x] **V1 MVP**: Basic manifest creation and manual tracking.
+-   [x] **V2 Hybrid Upgrade**: Integration of SQL backend for performance.
+-   [x] **Anomaly Detection**: On-chain volume variance logic.
+-   [x] **Automated Notifications**: Telegram integration via Kwala.
+-   [ ] **V3 Multi-Chain**: Support for cross-chain logistics tracking.
+-   [ ] **AI Optimization**: Route prediction and demand forecasting.
 
 ---
 
