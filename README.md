@@ -1,7 +1,5 @@
 # ⛽ Tankabu: Autonomous Fuel Distribution Layer (V2)
 
-![Tankabu Dashboard](docs/assets/dashboard_mockup.png)
-
 **Tankabu** is a next-generation decentralized logistics and automation platform designed to solve the "last mile" transparency problem in fuel distribution. By leveraging a **Hybrid High-Integrity Protocol**, Tankabu combines the immutable truth of the blockchain with the high-speed performance of a standalone SQL backend, orchestrated by **Kwala's** off-chain intelligence.
 
 ---
