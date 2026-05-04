@@ -70,7 +70,34 @@ Activate the following YAMLs in the Kwala dashboard:
 
 ---
 
-## 5. Frontend Integration (Tankabu)
+## 5. Telegram Notifier Setup
+
+Tankabu uses Telegram to notify drivers of new dispatches and alert operators to anomalies. Follow these steps to set up your notification channel:
+
+### Step 1: Create a Telegram Bot
+1. Open Telegram and search for **@BotFather**.
+2. Send `/newbot` and follow the instructions to name your bot.
+3. **Save the API Token** provided (it looks like `123456789:ABCDefgh...`).
+
+### Step 2: Get your Chat ID
+1. Search for **@userinfobot** in Telegram.
+2. Send any message to it, and it will reply with your `Id` (e.g., `307092268`).
+3. Alternatively, add your new bot to a group and use a tool like `@get_id_bot` to get the Group Chat ID.
+
+### Step 3: Update Kwala Workflows
+Open the following files in the `kwala/` directory and replace the placeholder values:
+
+- `kwala/manifest_notifier.yaml`
+- `kwala/dispatcher.yaml`
+- `kwala/gas-manager.yaml`
+
+**Replace these fields:**
+1. `APIEndpoint`: Update the token in the URL: `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/sendMessage`
+2. `chat_id`: Replace `"307092268"` with your actual Chat ID.
+
+---
+
+## 6. Frontend Integration (Tankabu)
 
 Update `tankabu/src/lib/constants.ts` with your new deployment data:
 
